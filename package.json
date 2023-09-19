@@ -1,7 +1,7 @@
 {
   "name": "@cshbicos/tctm-capacitor-https",
   "version": "0.0.1",
-  "description": "Removes common CORS and SSL issues encountered when deploying TCTM Apps with HTTPS",
+  "description": "Android only: Removes common CORS and SSL issues encountered when deploying TCTM Apps with HTTPS",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -17,7 +17,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/theconfigteam/tctm-capacitor-https.git.git"
+    "url": "https://github.com/theconfigteam/tctm-capacitor-https.git"
   },
   "bugs": {
     "url": "https://github.com/theconfigteam/tctm-capacitor-https.git/issues"

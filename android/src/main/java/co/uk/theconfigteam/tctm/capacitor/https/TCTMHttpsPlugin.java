@@ -43,6 +43,10 @@ public class TCTMHttpsPlugin extends Plugin {
 
     @Override
     public void load() {
+        
+        if (this.getBridge().getConfig().getHostname().equalsIgnoreCase("localhost"))
+            //no specific server set - ignore!
+            return;
 
         boolean ignoreSSLErrors = this.getConfig().getBoolean("ignoreSSLErrors", false);
         if (ignoreSSLErrors) {

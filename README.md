@@ -5,33 +5,29 @@ Removes common CORS and SSL issues encountered when deploying TCTM Apps with HTT
 ## Install
 
 ```bash
-npm install tctm-https
+npm install @cshbicos/tctm-capacitor-https
 npx cap sync
 ```
 
-## API
+## Configuration
+In capacitor.config.json, set the following
 
-<docgen-index>
-
-* [`echo(...)`](#echo)
-
-</docgen-index>
-
-<docgen-api>
-<!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
-
-### echo(...)
-
-```typescript
-echo(options: { value: string; }) => Promise<{ value: string; }>
 ```
-
-| Param         | Type                            |
-| ------------- | ------------------------------- |
-| **`options`** | <code>{ value: string; }</code> |
-
-**Returns:** <code>Promise&lt;{ value: string; }&gt;</code>
-
---------------------
-
-</docgen-api>
+{
+    ....
+	"server": {
+		"hostname": "yourserver.yourcompany.com",
+		"androidScheme": "https"
+	},
+	"plugins": {
+        ...
+		"TCTMHttps": {
+			"ignoreSSLErrors": false,
+			"backendPaths": [
+				"/api",
+				"/api2"
+			]
+		}
+	}
+}
+```

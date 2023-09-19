@@ -1,5 +1,5 @@
 {
-  "name": "tctm-https",
+  "name": "@cshbicos/tctm-capacitor-https",
   "version": "0.0.1",
   "description": "Removes common CORS and SSL issues encountered when deploying TCTM Apps with HTTPS",
   "main": "dist/plugin.cjs.js",

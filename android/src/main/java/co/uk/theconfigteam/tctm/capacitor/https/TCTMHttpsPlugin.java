@@ -1,22 +1,90 @@
 package co.uk.theconfigteam.tctm.capacitor.https;
 
-import com.getcapacitor.JSObject;
+import android.net.http.SslError;
+import android.webkit.SslErrorHandler;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebView;
+
+import com.getcapacitor.BridgeWebViewClient;
 import com.getcapacitor.Plugin;
-import com.getcapacitor.PluginCall;
-import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Objects;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 @CapacitorPlugin(name = "TCTMHttps")
 public class TCTMHttpsPlugin extends Plugin {
 
-    private TCTMHttps implementation = new TCTMHttps();
+    TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[]{};
+                }
 
-    @PluginMethod
-    public void echo(PluginCall call) {
-        String value = call.getString("value");
+                @Override
+                public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                }
 
-        JSObject ret = new JSObject();
-        ret.put("value", implementation.echo(value));
-        call.resolve(ret);
+                @Override
+                public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+                }
+            }
+    };
+
+    @Override
+    public void load() {
+
+        boolean ignoreSSLErrors = this.getConfig().getBoolean("ignoreSSLErrors", false);
+        if (ignoreSSLErrors) {
+            try {
+                SSLContext sc = SSLContext.getInstance("TLS");
+                sc.init(null, trustAllCerts, new java.security.SecureRandom());
+                HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+                String allowedHostname = this.getBridge().getConfig().getHostname();
+                HostnameVerifier originalVerifier = HttpsURLConnection.getDefaultHostnameVerifier();
+                HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> {
+                    if (allowedHostname.equalsIgnoreCase(hostname))
+                        return true;
+
+                    return originalVerifier.verify(hostname, session);
+                });
+                HttpsURLConnection.setFollowRedirects(true);
+            } catch (KeyManagementException | NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+        String[] backendPaths = this.getConfig().getArray("backendPaths", new String[]{});
+
+        this.bridge.setWebViewClient(new BridgeWebViewClient(this.bridge) {
+            @Override
+            public void onReceivedSslError(WebView view, final SslErrorHandler handler, SslError error) {
+                if (ignoreSSLErrors)
+                    handler.proceed();
+                else
+                    handler.cancel();
+            }
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                for (String backendPath : backendPaths)
+                    if (Objects.requireNonNull(request.getUrl().getPath()).startsWith(backendPath))
+                        return null;
+
+                return super.shouldInterceptRequest(view, request);
+            }
+        });
     }
 }
